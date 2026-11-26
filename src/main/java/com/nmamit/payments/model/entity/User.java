@@ -2,6 +2,8 @@ package com.nmamit.payments.model.entity;
 
 import com.nmamit.payments.model.enums.Role;
 import jakarta.persistence.*;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 import lombok.*;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
@@ -30,6 +32,7 @@ public class User {
     private String mobileNumber;      // registered number for OTP
 
     @Enumerated(EnumType.STRING)
+    @JdbcTypeCode(SqlTypes.VARCHAR)   // plain VARCHAR, so new enum values never need a schema change
     @Column(nullable = false, length = 20)
     private Role role;
 

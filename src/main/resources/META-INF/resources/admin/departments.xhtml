@@ -1,0 +1,44 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:h="jakarta.faces.html"
+                xmlns:f="jakarta.faces.core"
+                xmlns:ui="jakarta.faces.facelets"
+                xmlns:pt="jakarta.faces.passthrough"
+                template="/WEB-INF/templates/layout.xhtml">
+
+    <ui:define name="title">Departments - Corporate Payments</ui:define>
+
+    <ui:define name="content">
+        <div class="panel">
+            <h2>Departments</h2>
+            <h:dataTable value="#{adminBean.departments}" var="d" styleClass="grid">
+                <h:column><f:facet name="header">ID</f:facet>#{d.id}</h:column>
+                <h:column><f:facet name="header">Name</f:facet>#{d.name}</h:column>
+                <h:column headerClass="num" styleClass="num">
+                    <f:facet name="header">Budget limit (INR)</f:facet>
+                    <h:outputText value="#{d.budgetLimit}" rendered="#{not empty d.budgetLimit}">
+                        <f:convertNumber pattern="#,##0.00"/>
+                    </h:outputText>
+                    <h:outputText value="No limit" rendered="#{empty d.budgetLimit}"/>
+                </h:column>
+            </h:dataTable>
+        </div>
+
+        <div class="panel">
+            <h2>Add department</h2>
+            <h:form id="newDepartment">
+                <input type="hidden" name="#{_csrf.parameterName}" value="#{_csrf.token}"/>
+                <div class="form-row">
+                    <h:outputLabel for="name" value="Name"/>
+                    <h:inputText id="name" value="#{adminBean.departmentName}" required="true"
+                                 requiredMessage="Department name is required"/>
+                </div>
+                <div class="form-row">
+                    <h:outputLabel for="budget" value="Budget limit in INR (leave empty for no limit)"/>
+                    <h:inputText id="budget" value="#{adminBean.budgetLimit}"
+                                 converterMessage="Enter a valid amount" pt:type="number" pt:step="0.01"/>
+                </div>
+                <h:commandButton value="Create department" styleClass="btn" action="#{adminBean.createDepartment}"/>
+            </h:form>
+        </div>
+    </ui:define>
+</ui:composition>

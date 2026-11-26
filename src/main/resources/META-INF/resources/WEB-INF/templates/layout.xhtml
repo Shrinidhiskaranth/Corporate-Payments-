@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="jakarta.faces.html"
+      xmlns:ui="jakarta.faces.facelets">
+<ui:insert name="metadata"/>
+<h:head>
+    <title><ui:insert name="title">Corporate Payments</ui:insert></title>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <style>
+        :root {
+            --blue-900: #0f2550; --blue-800: #16326a; --blue-700: #1f3b73; --blue-600: #2a4f97;
+            --blue-500: #3a66c4; --blue-100: #e8eefb; --blue-50: #f3f6fd;
+            --ink: #1b2333; --ink-2: #4a5568; --ink-3: #718096;
+            --line: #e2e7f0; --line-2: #eef1f6; --bg: #f4f6fb; --white: #fff;
+            --green: #1e7d34; --green-bg: #e7f5ec; --red: #b3261e; --red-bg: #fdecea;
+            --amber: #8a5300; --amber-bg: #fff4e2;
+            --radius: 10px; --shadow: 0 1px 2px rgba(16, 36, 80, .06), 0 4px 14px rgba(16, 36, 80, .06);
+        }
+        * { box-sizing: border-box; }
+        body { font-family: "Segoe UI", system-ui, -apple-system, Roboto, Arial, sans-serif; margin: 0;
+               color: var(--ink); background: var(--bg); font-size: 14.5px; line-height: 1.5; }
+        a { color: var(--blue-600); }
+        a:hover { color: var(--blue-800); }
+
+        /* ---------- header ---------- */
+        header { background: linear-gradient(100deg, var(--blue-900) 0%, var(--blue-700) 55%, var(--blue-600) 100%);
+                 color: #fff; padding: 0 28px; display: flex; align-items: center; justify-content: space-between;
+                 flex-wrap: wrap; gap: 8px 20px; min-height: 64px; position: sticky; top: 0; z-index: 10;
+                 box-shadow: 0 2px 10px rgba(15, 37, 80, .25); }
+        header nav { display: flex; flex-wrap: wrap; align-items: center; gap: 2px; }
+        header .brand { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 16px;
+                        margin-right: 18px; color: #fff; text-decoration: none; letter-spacing: .2px; }
+        header .brand .logo { width: 32px; height: 32px; border-radius: 8px; background: rgba(255, 255, 255, .16);
+                              border: 1px solid rgba(255, 255, 255, .28); display: grid; place-items: center;
+                              font-size: 17px; font-weight: 800; }
+        header nav a:not(.brand) { color: rgba(255, 255, 255, .86); text-decoration: none; padding: 8px 12px;
+                                   border-radius: 6px; font-size: 14px; transition: background .15s, color .15s; }
+        header nav a:not(.brand):hover { background: rgba(255, 255, 255, .12); color: #fff; }
+        header nav a.active { background: rgba(255, 255, 255, .18); color: #fff; font-weight: 600; }
+        header .who { display: flex; align-items: center; gap: 12px; }
+        header .avatar { width: 34px; height: 34px; border-radius: 50%; background: #fff; color: var(--blue-700);
+                         display: grid; place-items: center; font-weight: 700; text-transform: uppercase; }
+        header .email { font-size: 13px; color: rgba(255, 255, 255, .9); }
+        header form { display: inline; margin: 0; }
+        header .btn.secondary { background: transparent; color: #fff; border-color: rgba(255, 255, 255, .55); }
+        header .btn.secondary:hover { background: rgba(255, 255, 255, .14); }
+
+        main { max-width: 1200px; margin: 28px auto; padding: 0 20px; }
+        h2 { margin: 0 0 10px; color: var(--blue-800); font-size: 20px; font-weight: 650; }
+        h3 { margin: 0 0 12px; color: var(--blue-800); font-size: 16.5px; font-weight: 650; }
+
+        /* ---------- panels and cards ---------- */
+        .panel { background: var(--white); border: 1px solid var(--line); border-radius: var(--radius);
+                 padding: 22px 24px; margin-bottom: 22px; overflow-x: auto; box-shadow: var(--shadow); }
+        .panel-head { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;
+                      gap: 10px; margin-bottom: 6px; }
+        .panel-head h2, .panel-head h3 { margin: 0; }
+        .cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 16px; margin-bottom: 22px; }
+        .card { background: var(--white); border: 1px solid var(--line); border-radius: var(--radius); padding: 16px 20px;
+                box-shadow: var(--shadow); position: relative; overflow: hidden; color: var(--ink-2); font-size: 13.5px; }
+        .card::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 4px; background: var(--blue-500); }
+        .card b { display: block; font-size: 28px; line-height: 1.2; color: var(--blue-800); margin-bottom: 2px; font-weight: 700; }
+        .card.alert::before { background: var(--red); }
+        .card.alert b { color: var(--red); }
+
+        /* ---------- tables ---------- */
+        table.grid { border-collapse: separate; border-spacing: 0; width: 100%; font-size: 14px; }
+        table.grid th, table.grid td { border-bottom: 1px solid var(--line-2); padding: 11px 12px; text-align: left; vertical-align: top; }
+        table.grid th { background: var(--blue-50); color: var(--blue-800); font-size: 12px; font-weight: 700;
+                        text-transform: uppercase; letter-spacing: .4px; white-space: nowrap; border-bottom: 1px solid var(--line); }
+        table.grid th:first-child { border-top-left-radius: 8px; }
+        table.grid th:last-child { border-top-right-radius: 8px; }
+        table.grid tbody tr { transition: background .12s; }
+        table.grid tbody tr:hover td { background: #f8faff; }
+        table.grid td a { font-weight: 600; text-decoration: none; }
+        table.grid td a:hover { text-decoration: underline; }
+        table.details { border-collapse: collapse; }
+        table.details th { text-align: left; padding: 7px 24px 7px 0; color: var(--ink-3); font-weight: 600;
+                           white-space: nowrap; vertical-align: top; font-size: 13.5px; }
+        table.details td { padding: 7px 0; }
+        .num { text-align: right !important; white-space: nowrap; font-variant-numeric: tabular-nums; }
+
+        /* ---------- buttons ---------- */
+        .btn { display: inline-flex; align-items: center; gap: 6px; background: var(--blue-700); color: #fff;
+               border: 1px solid transparent; border-radius: 7px; padding: 8px 16px; cursor: pointer;
+               text-decoration: none; font-size: 14px; font-weight: 600; line-height: 1.2; font-family: inherit;
+               transition: background .15s, box-shadow .15s, transform .05s; }
+        .btn:hover { background: var(--blue-800); color: #fff; box-shadow: 0 2px 8px rgba(31, 59, 115, .25); }
+        .btn:active { transform: translateY(1px); }
+        .btn:focus-visible { outline: 3px solid rgba(58, 102, 196, .35); outline-offset: 2px; }
+        .btn.secondary { background: var(--white); color: var(--blue-700); border: 1px solid #c3cfe6; }
+        .btn.secondary:hover { background: var(--blue-50); border-color: var(--blue-500); color: var(--blue-800); box-shadow: none; }
+        .btn.danger { background: var(--red); }
+        .btn.danger:hover { background: #8f1d17; }
+        .btn.success { background: var(--green); }
+        .btn.success:hover { background: #17642a; }
+        .btn.small { padding: 5px 11px; font-size: 13px; }
+        .actions { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+        table.grid .actions { flex-wrap: nowrap; white-space: nowrap; }
+
+        /* ---------- messages ---------- */
+        .msgs { list-style: none; padding: 0; margin: 0 0 18px; }
+        .msgs li { padding: 12px 16px; border-radius: 8px; margin-bottom: 8px; border-left: 4px solid; box-shadow: var(--shadow); }
+        .msg-info { background: var(--green-bg); color: #17532a; border-color: var(--green) !important; }
+        .msg-error { background: var(--red-bg); color: #7d1a13; border-color: var(--red) !important; }
+        .error-box { background: var(--red-bg); color: #7d1a13; padding: 12px 16px; border-radius: 8px;
+                     margin-bottom: 14px; border-left: 4px solid var(--red); }
+
+        /* ---------- forms ---------- */
+        .form-row { margin-bottom: 16px; }
+        .form-row label { display: block; font-weight: 600; margin-bottom: 5px; color: var(--ink-2); font-size: 13.5px; }
+        input[type=text], input[type=number], input[type=email], input[type=password], input[type=date], select, textarea {
+            font-family: inherit; font-size: 14px; color: var(--ink); background: var(--white);
+            border: 1px solid #cbd3e1; border-radius: 7px; padding: 8px 10px; transition: border-color .15s, box-shadow .15s; }
+        input:focus, select:focus, textarea:focus { outline: none; border-color: var(--blue-500);
+            box-shadow: 0 0 0 3px rgba(58, 102, 196, .18); }
+        .form-row input[type=text], .form-row input[type=number], .form-row input[type=email],
+        .form-row input[type=password], .form-row input[type=date], .form-row select, .form-row textarea
+            { width: 100%; max-width: 440px; }
+        .filters { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 12px 16px;
+                   align-items: end; margin: 14px 0 16px; padding: 16px; background: var(--blue-50);
+                   border: 1px solid var(--line); border-radius: 8px; }
+        .filters label { display: block; font-size: 11.5px; font-weight: 700; color: var(--ink-3); margin-bottom: 4px;
+                         text-transform: uppercase; letter-spacing: .4px; }
+        .filters input, .filters select { width: 100%; }
+        .filters .check { display: flex; align-items: center; gap: 8px; font-size: 14px; padding-bottom: 8px; }
+        .filters .check input { width: auto; }
+        .filters .check label { text-transform: none; letter-spacing: 0; font-size: 14px; color: var(--ink); }
+        .pager { display: flex; align-items: center; gap: 12px; margin-top: 16px; flex-wrap: wrap; color: var(--ink-2); }
+        .remarks { width: 190px; }
+        .muted { color: var(--ink-3); font-size: 13px; }
+
+        /* ---------- status and tags ---------- */
+        .status { display: inline-block; font-size: 11.5px; font-weight: 700; padding: 3px 10px; border-radius: 999px;
+                  white-space: nowrap; letter-spacing: .3px; }
+        .st-DRAFT { background: #edf0f4; color: #4a5568; }
+        .st-PENDING_MANAGER, .st-PENDING_FINANCE, .st-PENDING_DIRECTOR { background: var(--amber-bg); color: var(--amber); }
+        .st-APPROVED { background: var(--blue-100); color: var(--blue-700); }
+        .st-PAID { background: var(--green-bg); color: var(--green); }
+        .st-REJECTED { background: var(--red-bg); color: var(--red); }
+        .st-CANCELLED { background: #f3e8f6; color: #6a1b9a; }
+        .sub { display: block; font-size: 12px; margin-top: 5px; white-space: nowrap; }
+        .tag { display: inline-block; font-size: 10.5px; font-weight: 800; padding: 2px 7px; border-radius: 5px;
+               white-space: nowrap; background: var(--red-bg); color: var(--red); letter-spacing: .4px; margin-left: 4px; }
+        .tag.info { background: var(--blue-100); color: var(--blue-700); }
+
+        /* ---------- approval route stepper ---------- */
+        .steps { display: flex; flex-wrap: wrap; gap: 0; margin: 16px 0 6px; padding: 0; list-style: none; counter-reset: step; }
+        .steps li { position: relative; padding: 9px 18px 9px 30px; font-size: 13px; font-weight: 600;
+                    background: var(--blue-50); color: var(--ink-3); border: 1px solid var(--line);
+                    margin-right: -1px; min-width: 120px; }
+        .steps li:first-child { border-radius: 8px 0 0 8px; padding-left: 18px; }
+        .steps li:last-child { border-radius: 0 8px 8px 0; }
+        .steps li:not(:first-child)::before { content: "\203A"; position: absolute; left: 11px; top: 7px;
+                                              color: #a0aec0; font-size: 16px; }
+        .steps li small { display: block; color: inherit; opacity: .8; font-size: 11px; font-weight: 500; }
+        .steps li.done { background: var(--green-bg); color: var(--green); border-color: #bfe3cb; }
+        .steps li.current { background: var(--blue-700); color: #fff; border-color: var(--blue-700); }
+        .steps li.current::before { color: rgba(255, 255, 255, .7); }
+        .steps li.rejected { background: var(--red-bg); color: var(--red); border-color: #f2c1bd; }
+        .steps li.skipped { color: #a0aec0; text-decoration: line-through; }
+
+        footer { text-align: center; color: var(--ink-3); font-size: 12px; padding: 10px 0 30px; }
+
+        @media (max-width: 720px) {
+            header { padding: 10px 16px; }
+            header .email { display: none; }
+            main { padding: 0 12px; margin-top: 18px; }
+            .panel { padding: 16px; }
+        }
+    </style>
+</h:head>
+<h:body>
+    <header>
+        <nav>
+            <a class="brand" href="#{request.contextPath}/dashboard.xhtml"><span class="logo">&#8377;</span>Corporate Payments</a>
+            <a href="#{request.contextPath}/dashboard.xhtml">Dashboard</a>
+            <h:outputLink value="#{request.contextPath}/employee/new-request.xhtml"
+                          rendered="#{request.isUserInRole('EMPLOYEE')}">New request</h:outputLink>
+            <h:outputLink value="#{request.contextPath}/manager/approvals.xhtml"
+                          rendered="#{request.isUserInRole('MANAGER')}">Approvals</h:outputLink>
+            <h:outputLink value="#{request.contextPath}/finance/approvals.xhtml"
+                          rendered="#{request.isUserInRole('FINANCE')}">Finance</h:outputLink>
+            <h:outputLink value="#{request.contextPath}/director/approvals.xhtml"
+                          rendered="#{request.isUserInRole('DIRECTOR')}">Director desk</h:outputLink>
+            <h:outputLink value="#{request.contextPath}/admin/users.xhtml"
+                          rendered="#{request.isUserInRole('ADMIN')}">Users</h:outputLink>
+            <h:outputLink value="#{request.contextPath}/admin/departments.xhtml"
+                          rendered="#{request.isUserInRole('ADMIN')}">Departments</h:outputLink>
+            <h:outputLink value="#{request.contextPath}/admin/settings.xhtml"
+                          rendered="#{request.isUserInRole('ADMIN')}">Workflow rules</h:outputLink>
+            <h:outputLink value="#{request.contextPath}/admin/audit.xhtml"
+                          rendered="#{request.isUserInRole('ADMIN')}">Audit log</h:outputLink>
+        </nav>
+        <div class="who">
+            <span class="avatar">#{request.userPrincipal.name.substring(0, 1)}</span>
+            <span class="email">#{request.userPrincipal.name}</span>
+            <form method="post" action="#{request.contextPath}/logout">
+                <input type="hidden" name="#{_csrf.parameterName}" value="#{_csrf.token}"/>
+                <button type="submit" class="btn secondary small">Logout</button>
+            </form>
+        </div>
+    </header>
+    <main>
+        <h:messages styleClass="msgs" infoClass="msg-info" errorClass="msg-error" globalOnly="false"/>
+        <ui:insert name="content"/>
+    </main>
+    <footer>Corporate Payments Approval and Management System</footer>
+    <script>
+        // highlight the menu item of the current page
+        (function () {
+            var path = location.pathname;
+            document.querySelectorAll('header nav a:not(.brand)').forEach(function (a) {
+                if (a.pathname === path) { a.classList.add('active'); }
+            });
+        })();
+    </script>
+</h:body>
+</html>

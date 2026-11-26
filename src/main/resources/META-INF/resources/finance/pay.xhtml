@@ -1,0 +1,61 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:h="jakarta.faces.html"
+                xmlns:f="jakarta.faces.core"
+                xmlns:ui="jakarta.faces.facelets"
+                xmlns:pt="jakarta.faces.passthrough"
+                template="/WEB-INF/templates/layout.xhtml">
+
+    <ui:define name="metadata">
+        <f:metadata>
+            <f:viewParam name="id" value="#{paymentBean.id}"/>
+            <f:viewAction action="#{paymentBean.load}"/>
+        </f:metadata>
+    </ui:define>
+
+    <ui:define name="title">Make payment - Corporate Payments</ui:define>
+
+    <ui:define name="content">
+        <div class="panel">
+            <h2>Pay request #{paymentBean.request.requestNumber}</h2>
+            <table class="details">
+                <tr><th>Title</th><td>#{paymentBean.request.title}</td></tr>
+                <tr><th>Requested by</th>
+                    <td>#{paymentBean.request.requestedBy.fullName} (#{paymentBean.request.requestedBy.department.name})</td></tr>
+                <tr><th>Pay to</th><td><strong>#{paymentBean.request.beneficiaryName}</strong></td></tr>
+                <tr><th>Account number</th><td>#{paymentBean.request.beneficiaryAccount}</td></tr>
+                <tr><th>Amount</th>
+                    <td><strong>INR <h:outputText value="#{paymentBean.request.amount}"><f:convertNumber pattern="#,##0.00"/></h:outputText></strong></td></tr>
+            </table>
+        </div>
+
+        <div class="panel">
+            <h3>Confirm with OTP</h3>
+            <p class="muted">Step 1: click "Send OTP". A 6-digit code is sent to your registered mobile number
+                (valid for 5 minutes, 3 attempts).<br/>
+                Step 2: enter the code and click "Confirm payment".</p>
+
+            <h:form id="payForm">
+                <input type="hidden" name="#{_csrf.parameterName}" value="#{_csrf.token}"/>
+                <h:inputHidden value="#{paymentBean.id}"/>
+
+                <div class="actions" style="margin-bottom:14px">
+                    <h:commandButton value="Send OTP" styleClass="btn secondary" action="#{paymentBean.sendOtp}"/>
+                    <h:outputText value="An OTP is active for this payment." styleClass="muted"
+                                  rendered="#{paymentBean.otpSent}"/>
+                </div>
+
+                <div class="form-row">
+                    <h:outputLabel for="otp" value="OTP"/>
+                    <h:inputText id="otp" value="#{paymentBean.otp}" pt:maxlength="6"
+                                 pt:inputmode="numeric" pt:autocomplete="one-time-code"
+                                 pt:placeholder="6-digit code" style="max-width:160px"/>
+                </div>
+
+                <div class="actions">
+                    <h:commandButton value="Confirm payment" styleClass="btn success" action="#{paymentBean.confirm}"/>
+                    <a class="btn secondary" href="#{request.contextPath}/finance/approvals.xhtml">Back</a>
+                </div>
+            </h:form>
+        </div>
+    </ui:define>
+</ui:composition>

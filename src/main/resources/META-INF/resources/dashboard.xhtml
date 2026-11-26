@@ -1,0 +1,134 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:h="jakarta.faces.html"
+                xmlns:f="jakarta.faces.core"
+                xmlns:ui="jakarta.faces.facelets"
+                template="/WEB-INF/templates/layout.xhtml">
+
+    <ui:define name="title">Dashboard - Corporate Payments</ui:define>
+
+    <ui:define name="content">
+        <div class="panel">
+            <h2>Welcome, #{dashboardBean.user.fullName}</h2>
+            <p>Role: <strong>#{dashboardBean.user.role}</strong>
+               &#160;|&#160; Department: #{dashboardBean.departmentName}
+               &#160;|&#160; Registered mobile: #{dashboardBean.user.mobileNumber}</p>
+        </div>
+
+        <!-- EMPLOYEE -->
+        <h:panelGroup layout="block" rendered="#{dashboardBean.employee}">
+            <div class="cards">
+                <div class="card"><b>#{dashboardBean.myRequests.size()}</b>My requests</div>
+                <div class="card"><b>#{dashboardBean.countMine('DRAFT')}</b>Drafts</div>
+                <div class="card"><b>#{dashboardBean.countMine('PENDING_MANAGER') + dashboardBean.countMine('PENDING_FINANCE') + dashboardBean.countMine('PENDING_DIRECTOR')}</b>Awaiting approval</div>
+                <div class="card"><b>#{dashboardBean.countMine('APPROVED')}</b>Approved, to be paid</div>
+                <div class="card"><b>#{dashboardBean.countMine('PAID')}</b>Paid</div>
+            </div>
+
+            <div class="panel">
+                <div class="panel-head">
+                    <h3>My payment requests</h3>
+                    <a class="btn" href="#{request.contextPath}/employee/new-request.xhtml">+ New request</a>
+                </div>
+
+                <h:outputText value="You have no payment requests yet."
+                              rendered="#{empty dashboardBean.myRequests}"/>
+
+                <h:form id="requests" rendered="#{not empty dashboardBean.myRequests}">
+                    <input type="hidden" name="#{_csrf.parameterName}" value="#{_csrf.token}"/>
+                    <h:dataTable value="#{dashboardBean.myRequests}" var="r" styleClass="grid">
+                        <h:column>
+                            <f:facet name="header">Number</f:facet>
+                            <a href="#{request.contextPath}/request-detail.xhtml?id=#{r.id}">#{r.requestNumber}</a>
+                        </h:column>
+                        <h:column>
+                            <f:facet name="header">Title / pay to</f:facet>
+                            <strong>#{r.title}</strong><br/>
+                            <span class="muted">#{r.beneficiaryName}</span>
+                        </h:column>
+                        <h:column headerClass="num" styleClass="num">
+                            <f:facet name="header">Amount (INR)</f:facet>
+                            <h:outputText value="#{r.amount}"><f:convertNumber pattern="#,##0.00"/></h:outputText>
+                        </h:column>
+                        <h:column>
+                            <f:facet name="header">Category</f:facet>
+                            #{r.category}
+                        </h:column>
+                        <h:column>
+                            <f:facet name="header">Status</f:facet>
+                            <span class="status st-#{r.status}">#{r.status}</span>
+                        </h:column>
+                        <h:column>
+                            <f:facet name="header">Actions</f:facet>
+                            <div class="actions">
+                                <h:outputLink value="#{request.contextPath}/employee/new-request.xhtml"
+                                              styleClass="btn secondary" rendered="#{dashboardBean.canEdit(r)}">
+                                    <f:param name="id" value="#{r.id}"/>Edit
+                                </h:outputLink>
+                                <h:commandButton value="Submit" styleClass="btn"
+                                                 action="#{dashboardBean.submit(r.id)}"
+                                                 rendered="#{dashboardBean.canSubmit(r)}"/>
+                                <h:commandButton value="Cancel" styleClass="btn danger"
+                                                 action="#{dashboardBean.cancel(r.id)}"
+                                                 rendered="#{dashboardBean.canCancel(r)}"
+                                                 onclick="return confirm('Cancel this request?');"/>
+                            </div>
+                        </h:column>
+                    </h:dataTable>
+                </h:form>
+            </div>
+        </h:panelGroup>
+
+        <!-- MANAGER -->
+        <h:panelGroup layout="block" rendered="#{dashboardBean.manager}">
+            <div class="cards">
+                <div class="card"><b>#{dashboardBean.managerPendingCount}</b>Waiting for your decision</div>
+            </div>
+            <div class="panel">
+                <div class="actions">
+                    <a class="btn" href="#{request.contextPath}/manager/approvals.xhtml">Open approvals</a>
+                </div>
+            </div>
+        </h:panelGroup>
+
+        <!-- FINANCE -->
+        <h:panelGroup layout="block" rendered="#{dashboardBean.finance}">
+            <div class="cards">
+                <div class="card"><b>#{dashboardBean.financePendingCount}</b>Waiting for finance approval</div>
+                <div class="card"><b>#{dashboardBean.awaitingPaymentCount}</b>Approved, ready to pay</div>
+            </div>
+            <div class="panel">
+                <div class="actions">
+                    <a class="btn" href="#{request.contextPath}/finance/approvals.xhtml">Open finance desk</a>
+                </div>
+            </div>
+        </h:panelGroup>
+
+        <!-- DIRECTOR -->
+        <h:panelGroup layout="block" rendered="#{dashboardBean.director}">
+            <div class="cards">
+                <div class="card"><b>#{dashboardBean.directorPendingCount}</b>Large requests waiting for you</div>
+            </div>
+            <div class="panel">
+                <div class="actions">
+                    <a class="btn" href="#{request.contextPath}/director/approvals.xhtml">Open director desk</a>
+                </div>
+            </div>
+        </h:panelGroup>
+
+        <!-- ADMIN -->
+        <h:panelGroup layout="block" rendered="#{dashboardBean.admin}">
+            <div class="cards">
+                <div class="card"><b>#{dashboardBean.totalRequests}</b>Total requests</div>
+                <div class="card"><b>#{dashboardBean.totalPaid}</b>Paid requests</div>
+            </div>
+            <div class="panel">
+                <div class="actions">
+                    <a class="btn" href="#{request.contextPath}/admin/users.xhtml">Manage users</a>
+                    <a class="btn" href="#{request.contextPath}/admin/departments.xhtml">Departments</a>
+                    <a class="btn" href="#{request.contextPath}/admin/settings.xhtml">Workflow rules</a>
+                    <a class="btn" href="#{request.contextPath}/admin/audit.xhtml">Audit log</a>
+                </div>
+            </div>
+        </h:panelGroup>
+    </ui:define>
+</ui:composition>

@@ -1,0 +1,51 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:h="jakarta.faces.html"
+                xmlns:f="jakarta.faces.core"
+                xmlns:ui="jakarta.faces.facelets"
+                xmlns:pt="jakarta.faces.passthrough"
+                template="/WEB-INF/templates/layout.xhtml">
+
+    <ui:define name="title">Director desk - Corporate Payments</ui:define>
+
+    <ui:define name="content">
+        <div class="panel">
+            <h2>Large requests waiting for director approval</h2>
+            <p class="muted">Requests above the director threshold, already approved by the manager and finance.
+                Your approval is final; the request then goes to finance for payment.</p>
+
+            <h:outputText value="No large requests are waiting for you."
+                          rendered="#{empty approvalBean.directorQueue}"/>
+
+            <h:form id="directorForm" rendered="#{not empty approvalBean.directorQueue}">
+                <input type="hidden" name="#{_csrf.parameterName}" value="#{_csrf.token}"/>
+                <h:dataTable value="#{approvalBean.directorQueue}" var="r" styleClass="grid">
+                    <h:column>
+                        <f:facet name="header">Number</f:facet>
+                        <a href="#{request.contextPath}/request-detail.xhtml?id=#{r.id}">#{r.requestNumber}</a>
+                    </h:column>
+                    <h:column><f:facet name="header">Department</f:facet>#{r.requestedBy.department.name}</h:column>
+                    <h:column><f:facet name="header">Title / pay to</f:facet><strong>#{r.title}</strong><br/><span class="muted">#{r.beneficiaryName}</span></h:column>
+                    <h:column headerClass="num" styleClass="num">
+                        <f:facet name="header">Amount (INR)</f:facet>
+                        <h:outputText value="#{r.amount}"><f:convertNumber pattern="#,##0.00"/></h:outputText>
+                    </h:column>
+                    <h:column>
+                        <f:facet name="header">Remarks</f:facet>
+                        <h:inputText value="#{approvalBean.remarks[r.id]}" styleClass="remarks"
+                                     pt:placeholder="Reason / comment" pt:maxlength="300"/>
+                    </h:column>
+                    <h:column>
+                        <f:facet name="header">Decision</f:facet>
+                        <div class="actions">
+                            <h:commandButton value="Approve" styleClass="btn success"
+                                             action="#{approvalBean.directorApprove(r.id)}"/>
+                            <h:commandButton value="Reject" styleClass="btn danger"
+                                             action="#{approvalBean.directorReject(r.id)}"/>
+                        </div>
+                    </h:column>
+                </h:dataTable>
+            </h:form>
+        </div>
+
+    </ui:define>
+</ui:composition>

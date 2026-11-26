@@ -11,12 +11,14 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest
+@Transactional   // each test is rolled back so tests do not affect each other
 class CorporatePaymentsApplicationTests {
 
     @Autowired DepartmentRepository departmentRepository;
@@ -27,7 +29,7 @@ class CorporatePaymentsApplicationTests {
     @Test
     void seedDataIsLoaded() {
         assertThat(departmentRepository.count()).isEqualTo(3);
-        assertThat(userRepository.count()).isEqualTo(4);
+        assertThat(userRepository.count()).isEqualTo(7);
         User admin = userRepository.findByEmail("admin@corp.com").orElseThrow();
         assertThat(passwordEncoder.matches("password123", admin.getPassword())).isTrue();
     }
@@ -40,7 +42,7 @@ class CorporatePaymentsApplicationTests {
         pr.setRequestNumber("PR-2026-0001");
         pr.setTitle("Laptop purchase");
         pr.setAmount(new BigDecimal("65000.00"));
-        pr.setCategory(PaymentCategory.PURCHASE);
+        pr.setCategory(PaymentCategory.IT_SERVICES);
         pr.setBeneficiaryName("ABC Computers");
         pr.setBeneficiaryAccount("123456789012");
         pr.setRequestedBy(employee);

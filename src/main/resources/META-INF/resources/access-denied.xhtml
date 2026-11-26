@@ -1,0 +1,14 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:ui="jakarta.faces.facelets"
+                template="/WEB-INF/templates/layout.xhtml">
+
+    <ui:define name="title">Access denied - Corporate Payments</ui:define>
+
+    <ui:define name="content">
+        <div class="panel">
+            <h2>Access denied</h2>
+            <p>Your role does not have permission to open this page.</p>
+            <p><a class="btn" href="#{request.contextPath}/dashboard.xhtml">Go to dashboard</a></p>
+        </div>
+    </ui:define>
+</ui:composition>

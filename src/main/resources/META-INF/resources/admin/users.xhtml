@@ -1,0 +1,80 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:h="jakarta.faces.html"
+                xmlns:f="jakarta.faces.core"
+                xmlns:ui="jakarta.faces.facelets"
+                xmlns:pt="jakarta.faces.passthrough"
+                template="/WEB-INF/templates/layout.xhtml">
+
+    <ui:define name="title">Users - Corporate Payments</ui:define>
+
+    <ui:define name="content">
+        <div class="panel">
+            <h2>Users</h2>
+            <h:form id="usersForm">
+                <input type="hidden" name="#{_csrf.parameterName}" value="#{_csrf.token}"/>
+                <h:dataTable value="#{adminBean.users}" var="u" styleClass="grid">
+                    <h:column><f:facet name="header">Name</f:facet>#{u.fullName}</h:column>
+                    <h:column><f:facet name="header">Email</f:facet>#{u.email}</h:column>
+                    <h:column><f:facet name="header">Mobile</f:facet>#{u.mobileNumber}</h:column>
+                    <h:column><f:facet name="header">Role</f:facet>#{u.role}</h:column>
+                    <h:column><f:facet name="header">Department</f:facet>#{empty u.department ? '-' : u.department.name}</h:column>
+                    <h:column><f:facet name="header">Status</f:facet>#{u.active ? 'Active' : 'Inactive'}</h:column>
+                    <h:column>
+                        <f:facet name="header">Action</f:facet>
+                        <h:commandButton value="Deactivate" styleClass="btn danger"
+                                         action="#{adminBean.toggleActive(u.id, false)}"
+                                         rendered="#{u.active and not adminBean.isSelf(u)}"/>
+                        <h:commandButton value="Activate" styleClass="btn success"
+                                         action="#{adminBean.toggleActive(u.id, true)}"
+                                         rendered="#{not u.active}"/>
+                    </h:column>
+                </h:dataTable>
+            </h:form>
+        </div>
+
+        <div class="panel">
+            <h2>Add user</h2>
+            <h:form id="newUser">
+                <input type="hidden" name="#{_csrf.parameterName}" value="#{_csrf.token}"/>
+                <div class="form-row">
+                    <h:outputLabel for="fullName" value="Full name"/>
+                    <h:inputText id="fullName" value="#{adminBean.fullName}" required="true"
+                                 requiredMessage="Full name is required"/>
+                </div>
+                <div class="form-row">
+                    <h:outputLabel for="email" value="Email (used to log in)"/>
+                    <h:inputText id="email" value="#{adminBean.email}" required="true"
+                                 requiredMessage="Email is required" pt:type="email"/>
+                </div>
+                <div class="form-row">
+                    <h:outputLabel for="mobile" value="Registered mobile number (10 digits, used for OTP)"/>
+                    <h:inputText id="mobile" value="#{adminBean.mobile}" required="true"
+                                 requiredMessage="Mobile number is required"
+                                 validatorMessage="Mobile number must be 10 digits starting with 6-9">
+                        <f:validateRegex pattern="[6-9]\d{9}"/>
+                    </h:inputText>
+                </div>
+                <div class="form-row">
+                    <h:outputLabel for="role" value="Role"/>
+                    <h:selectOneMenu id="role" value="#{adminBean.role}">
+                        <f:selectItems value="#{adminBean.roles}" var="ro" itemValue="#{ro}" itemLabel="#{ro}"/>
+                    </h:selectOneMenu>
+                </div>
+                <div class="form-row">
+                    <h:outputLabel for="department" value="Department"/>
+                    <h:selectOneMenu id="department" value="#{adminBean.departmentId}">
+                        <f:selectItem itemValue="#{null}" itemLabel="-- none --"/>
+                        <f:selectItems value="#{adminBean.departments}" var="d"
+                                       itemValue="#{d.id}" itemLabel="#{d.name}"/>
+                    </h:selectOneMenu>
+                </div>
+                <div class="form-row">
+                    <h:outputLabel for="password" value="Initial password (at least 8 characters)"/>
+                    <h:inputSecret id="password" value="#{adminBean.password}" required="true"
+                                   requiredMessage="Password is required"/>
+                </div>
+                <h:commandButton value="Create user" styleClass="btn" action="#{adminBean.createUser}"/>
+            </h:form>
+        </div>
+    </ui:define>
+</ui:composition>

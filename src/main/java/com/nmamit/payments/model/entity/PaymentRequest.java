@@ -1,8 +1,11 @@
 package com.nmamit.payments.model.entity;
 
+import com.nmamit.payments.model.enums.ApprovalLevel;
 import com.nmamit.payments.model.enums.PaymentCategory;
 import com.nmamit.payments.model.enums.RequestStatus;
 import jakarta.persistence.*;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotBlank;
 import lombok.*;
@@ -38,6 +41,7 @@ public class PaymentRequest {
     private BigDecimal amount;
 
     @Enumerated(EnumType.STRING)
+    @JdbcTypeCode(SqlTypes.VARCHAR)   // plain VARCHAR, so new enum values never need a schema change
     @Column(nullable = false, length = 30)
     private PaymentCategory category;
 
@@ -48,11 +52,21 @@ public class PaymentRequest {
     private String beneficiaryAccount;
 
     @Enumerated(EnumType.STRING)
+    @JdbcTypeCode(SqlTypes.VARCHAR)   // plain VARCHAR, so new enum values never need a schema change
     @Column(nullable = false, length = 20)
     private RequestStatus status = RequestStatus.DRAFT;
 
     @Column(name = "due_date")
     private LocalDate dueDate;
+
+    /**
+     * Highest approval step this request needs, fixed from the amount rules when it is submitted
+     * (so later changes to the rules do not affect requests already in the workflow).
+     */
+    @Enumerated(EnumType.STRING)
+    @JdbcTypeCode(SqlTypes.VARCHAR)
+    @Column(name = "final_level", length = 20)
+    private ApprovalLevel finalLevel;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "requested_by")
@@ -65,4 +79,9 @@ public class PaymentRequest {
     @LastModifiedDate
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
+
+    /** Requests created before amount rules existed went through manager + finance. */
+    public ApprovalLevel getEffectiveFinalLevel() {
+        return finalLevel == null ? ApprovalLevel.FINANCE : finalLevel;
+    }
 }

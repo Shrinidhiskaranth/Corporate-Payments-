@@ -7,3 +7,6 @@ target/
 .vscode/
 *.log
 .DS_Store
+
+# Local secrets (Gmail app password for OTP emails) - never commit
+mail-secrets.properties

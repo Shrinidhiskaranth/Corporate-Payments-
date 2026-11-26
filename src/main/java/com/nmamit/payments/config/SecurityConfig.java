@@ -2,16 +2,17 @@ package com.nmamit.payments.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 
 /**
- * Phase 1 security setup.
- * The home page and the summary API are open so the setup can be demonstrated.
- * Database-backed login and role rules are added in the next phase.
+ * Security setup.
+ * - Users log in with email + password stored in MySQL (see CustomUserDetailsService).
+ * - Passwords are checked against BCrypt hashes.
+ * - Each folder of pages is restricted to one role; services check roles again.
+ * - CSRF protection is on; every form includes the _csrf hidden field.
  */
 @Configuration
 public class SecurityConfig {
@@ -25,11 +26,32 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/", "/index.xhtml", "/jakarta.faces.resource/**",
-                                 "/api/summary", "/css/**", "/error").permitAll()
+                // public pages and JSF resources
+                .requestMatchers("/", "/index.xhtml", "/login.xhtml",
+                                 "/jakarta.faces.resource/**", "/error").permitAll()
+                // role-specific areas
+                .requestMatchers("/employee/**").hasRole("EMPLOYEE")
+                .requestMatchers("/manager/**").hasRole("MANAGER")
+                .requestMatchers("/finance/**").hasRole("FINANCE")
+                .requestMatchers("/director/**").hasRole("DIRECTOR")
+                .requestMatchers("/admin/**").hasRole("ADMIN")
+                // everything else (dashboard, request detail, receipts) needs a logged-in user;
+                // the services limit what each role can see
                 .anyRequest().authenticated())
-            .formLogin(Customizer.withDefaults())
-            .logout(Customizer.withDefaults());
+            .formLogin(form -> form
+                .loginPage("/login.xhtml")
+                .loginProcessingUrl("/login")
+                .usernameParameter("email")
+                .passwordParameter("password")
+                .defaultSuccessUrl("/dashboard.xhtml", true)
+                .failureUrl("/login.xhtml?error=true")
+                .permitAll())
+            .logout(logout -> logout
+                .logoutUrl("/logout")
+                .logoutSuccessUrl("/login.xhtml?logout=true")
+                .invalidateHttpSession(true)
+                .deleteCookies("JSESSIONID"))
+            .exceptionHandling(ex -> ex.accessDeniedPage("/access-denied.xhtml"));
         return http.build();
     }
 }
