@@ -1,0 +1,50 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:h="jakarta.faces.html"
+                xmlns:f="jakarta.faces.core"
+                xmlns:ui="jakarta.faces.facelets"
+                xmlns:pt="jakarta.faces.passthrough"
+                template="/WEB-INF/templates/layout.xhtml">
+
+    <ui:define name="title">Manager approvals - Corporate Payments</ui:define>
+
+    <ui:define name="content">
+        <div class="panel">
+            <h2>Requests waiting for your approval</h2>
+            <p class="muted">Only requests from employees in your department are shown, oldest first.
+                A reason is required to reject.</p>
+
+            <h:outputText value="Nothing is waiting for you right now."
+                          rendered="#{empty approvalBean.managerQueue}"/>
+
+            <h:form id="managerForm" rendered="#{not empty approvalBean.managerQueue}">
+                <input type="hidden" name="#{_csrf.parameterName}" value="#{_csrf.token}"/>
+                <h:dataTable value="#{approvalBean.managerQueue}" var="r" styleClass="grid">
+                    <h:column>
+                        <f:facet name="header">Number</f:facet>
+                        <a href="#{request.contextPath}/request-detail.xhtml?id=#{r.id}">#{r.requestNumber}</a>
+                    </h:column>
+                    <h:column><f:facet name="header">Employee</f:facet>#{r.requestedBy.fullName}</h:column>
+                    <h:column><f:facet name="header">Title / pay to</f:facet><strong>#{r.title}</strong><br/><span class="muted">#{r.beneficiaryName}</span></h:column>
+                    <h:column headerClass="num" styleClass="num">
+                        <f:facet name="header">Amount (INR)</f:facet>
+                        <h:outputText value="#{r.amount}"><f:convertNumber pattern="#,##0.00"/></h:outputText>
+                    </h:column>
+                    <h:column>
+                        <f:facet name="header">Remarks</f:facet>
+                        <h:inputText value="#{approvalBean.remarks[r.id]}" styleClass="remarks"
+                                     pt:placeholder="Reason / comment" pt:maxlength="300"/>
+                    </h:column>
+                    <h:column>
+                        <f:facet name="header">Decision</f:facet>
+                        <div class="actions">
+                            <h:commandButton value="Approve" styleClass="btn success"
+                                             action="#{approvalBean.managerApprove(r.id)}"/>
+                            <h:commandButton value="Reject" styleClass="btn danger"
+                                             action="#{approvalBean.managerReject(r.id)}"/>
+                        </div>
+                    </h:column>
+                </h:dataTable>
+            </h:form>
+        </div>
+    </ui:define>
+</ui:composition>

@@ -1,0 +1,70 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:h="jakarta.faces.html"
+                xmlns:f="jakarta.faces.core"
+                xmlns:ui="jakarta.faces.facelets"
+                xmlns:pt="jakarta.faces.passthrough"
+                template="/WEB-INF/templates/layout.xhtml">
+
+    <ui:define name="metadata">
+        <f:metadata>
+            <f:viewParam name="id" value="#{requestDetailBean.id}"/>
+            <f:viewAction action="#{requestDetailBean.load}"/>
+        </f:metadata>
+    </ui:define>
+
+    <ui:define name="title">Request details - Corporate Payments</ui:define>
+
+    <ui:define name="content">
+        <h:panelGroup layout="block" rendered="#{not empty requestDetailBean.request}">
+            <ui:param name="req" value="#{requestDetailBean.request}"/>
+            <div class="panel">
+                <h2>Request #{req.requestNumber} &#8211; #{req.title}</h2>
+                <p>
+                    <span class="status st-#{req.status}">#{req.status}</span>
+                </p>
+
+                <ul class="steps">
+                    <ui:repeat value="#{requestDetailBean.steps}" var="s">
+                        <li class="#{s.state}">#{s.name}
+                            <h:panelGroup rendered="#{not empty s.note}"><small>#{s.note}</small></h:panelGroup>
+                        </li>
+                    </ui:repeat>
+                </ul>
+
+                <table class="details">
+                    <tr><th>Amount</th><td><strong>INR <h:outputText value="#{req.amount}"><f:convertNumber pattern="#,##0.00"/></h:outputText></strong></td></tr>
+                    <tr><th>Category</th><td>#{req.category}</td></tr>
+                    <tr><th>Description</th><td>#{empty req.description ? '-' : req.description}</td></tr>
+                    <tr><th>Pay to</th><td>#{req.beneficiaryName}, account #{req.beneficiaryAccount}</td></tr>
+                    <tr><th>Payment due date</th><td>#{empty req.dueDate ? '-' : req.dueDate}</td></tr>
+                    <tr><th>Requested by</th><td>#{req.requestedBy.fullName} (#{req.requestedBy.department.name})</td></tr>
+                    <tr><th>Created</th>
+                        <td><h:outputText value="#{req.createdAt}"><f:convertDateTime type="localDateTime" pattern="dd-MM-yyyy HH:mm"/></h:outputText></td></tr>
+                    <tr><th>Last updated</th>
+                        <td><h:outputText value="#{req.updatedAt}"><f:convertDateTime type="localDateTime" pattern="dd-MM-yyyy HH:mm"/></h:outputText></td></tr>
+                </table>
+            </div>
+
+            <div class="panel">
+                <h3>Approval history</h3>
+                <h:outputText value="No decisions yet." rendered="#{empty requestDetailBean.approvals}"/>
+                <h:dataTable value="#{requestDetailBean.approvals}" var="a" styleClass="grid"
+                             rendered="#{not empty requestDetailBean.approvals}">
+                    <h:column><f:facet name="header">Level</f:facet>#{a.level}</h:column>
+                    <h:column><f:facet name="header">Decision</f:facet>#{a.decision}</h:column>
+                    <h:column><f:facet name="header">By</f:facet>#{a.approver.fullName}</h:column>
+                    <h:column><f:facet name="header">Remarks</f:facet>#{empty a.remarks ? '-' : a.remarks}</h:column>
+                    <h:column>
+                        <f:facet name="header">When</f:facet>
+                        <h:outputText value="#{a.decidedAt}"><f:convertDateTime type="localDateTime" pattern="dd-MM-yyyy HH:mm"/></h:outputText>
+                    </h:column>
+                </h:dataTable>
+            </div>
+        </h:panelGroup>
+
+        <div class="actions">
+            <a class="btn secondary" href="javascript:history.back()">Back</a>
+            <a class="btn secondary" href="#{request.contextPath}/dashboard.xhtml">Dashboard</a>
+        </div>
+    </ui:define>
+</ui:composition>

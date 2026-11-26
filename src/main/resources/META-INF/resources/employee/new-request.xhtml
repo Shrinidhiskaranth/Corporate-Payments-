@@ -1,0 +1,90 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:h="jakarta.faces.html"
+                xmlns:f="jakarta.faces.core"
+                xmlns:ui="jakarta.faces.facelets"
+                xmlns:pt="jakarta.faces.passthrough"
+                template="/WEB-INF/templates/layout.xhtml">
+
+    <ui:define name="metadata">
+        <f:metadata>
+            <f:viewParam name="id" value="#{newRequestBean.id}"/>
+            <f:viewAction action="#{newRequestBean.load}"/>
+        </f:metadata>
+    </ui:define>
+
+    <ui:define name="title">Payment request - Corporate Payments</ui:define>
+
+    <ui:define name="content">
+        <div class="panel">
+            <h2>
+                <h:outputText value="Edit draft #{newRequestBean.requestNumber}" rendered="#{newRequestBean.editing}"/>
+                <h:outputText value="New payment request" rendered="#{not newRequestBean.editing}"/>
+            </h2>
+
+            <h:form id="requestForm">
+                <input type="hidden" name="#{_csrf.parameterName}" value="#{_csrf.token}"/>
+                <h:inputHidden value="#{newRequestBean.id}"/>
+
+                <div class="form-row">
+                    <h:outputLabel for="title" value="Title"/>
+                    <h:inputText id="title" value="#{newRequestBean.title}" required="true"
+                                 requiredMessage="Title is required" pt:maxlength="150"
+                                 pt:placeholder="e.g. Laptops for new joiners"/>
+                </div>
+
+                <div class="form-row">
+                    <h:outputLabel for="description" value="Description (optional)"/>
+                    <h:inputTextarea id="description" value="#{newRequestBean.description}" rows="3"
+                                     validatorMessage="Description can be at most 500 characters">
+                        <f:validateLength maximum="500"/>
+                    </h:inputTextarea>
+                </div>
+
+                <div class="form-row">
+                    <h:outputLabel for="amount" value="Amount (INR)"/>
+                    <h:inputText id="amount" value="#{newRequestBean.amount}" required="true"
+                                 requiredMessage="Amount is required" converterMessage="Enter a valid amount, e.g. 25000.00"
+                                 pt:type="number" pt:step="0.01" pt:min="0.01"/>
+                </div>
+
+                <div class="form-row">
+                    <h:outputLabel for="category" value="Category"/>
+                    <h:selectOneMenu id="category" value="#{newRequestBean.category}">
+                        <f:selectItems value="#{newRequestBean.categories}" var="c" itemValue="#{c}" itemLabel="#{c}"/>
+                    </h:selectOneMenu>
+                </div>
+
+                <div class="form-row">
+                    <h:outputLabel for="beneficiaryName" value="Pay to (beneficiary name)"/>
+                    <h:inputText id="beneficiaryName" value="#{newRequestBean.beneficiaryName}" required="true"
+                                 requiredMessage="Beneficiary name is required" pt:maxlength="100"/>
+                </div>
+
+                <div class="form-row">
+                    <h:outputLabel for="beneficiaryAccount" value="Beneficiary bank account number (9 to 18 digits)"/>
+                    <h:inputText id="beneficiaryAccount" value="#{newRequestBean.beneficiaryAccount}" required="true"
+                                 requiredMessage="Account number is required" pt:maxlength="18" pt:inputmode="numeric"/>
+                </div>
+
+                <div class="form-row">
+                    <h:outputLabel for="dueDate" value="Payment due date (optional)"/>
+                    <h:inputText id="dueDate" value="#{newRequestBean.dueDate}" pt:type="date"
+                                 converterMessage="Enter the date as YYYY-MM-DD">
+                        <f:convertDateTime type="localDate" pattern="yyyy-MM-dd"/>
+                    </h:inputText>
+                </div>
+
+                <div class="form-row">
+                    <h:selectBooleanCheckbox id="submitNow" value="#{newRequestBean.submitNow}"/>
+                    <h:outputLabel for="submitNow" value=" Submit for approval now (untick to keep as draft)"
+                                   style="display:inline; font-weight:normal"/>
+                </div>
+
+                <div class="actions">
+                    <h:commandButton value="Save request" styleClass="btn" action="#{newRequestBean.save}"/>
+                    <a class="btn secondary" href="#{request.contextPath}/dashboard.xhtml">Back</a>
+                </div>
+            </h:form>
+        </div>
+    </ui:define>
+</ui:composition>
