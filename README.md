@@ -84,3 +84,5 @@ src/test/java                            JUnit 5 tests
 
 ## Next version
 Version 7 adds vendors, contracts, procurement and the vendor portal.
+
+Contributor: Vinayak R Kamath (mvinayakrkamath-design)
