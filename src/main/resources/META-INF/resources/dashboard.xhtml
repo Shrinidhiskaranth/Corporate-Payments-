@@ -19,9 +19,8 @@
             <div class="cards">
                 <div class="card"><b>#{dashboardBean.myRequests.size()}</b>My requests</div>
                 <div class="card"><b>#{dashboardBean.countMine('DRAFT')}</b>Drafts</div>
-                <div class="card"><b>#{dashboardBean.countMine('PENDING_MANAGER') + dashboardBean.countMine('PENDING_FINANCE') + dashboardBean.countMine('PENDING_DIRECTOR')}</b>Awaiting approval</div>
-                <div class="card"><b>#{dashboardBean.countMine('APPROVED')}</b>Approved, to be paid</div>
-                <div class="card"><b>#{dashboardBean.countMine('PAID')}</b>Paid</div>
+                <div class="card"><b>#{dashboardBean.countMine('PENDING_MANAGER')}</b>Submitted</div>
+                <div class="card"><b>#{dashboardBean.countMine('CANCELLED')}</b>Cancelled</div>
             </div>
 
             <div class="panel">
@@ -81,53 +80,32 @@
         <!-- MANAGER -->
         <h:panelGroup layout="block" rendered="#{dashboardBean.manager}">
             <div class="cards">
-                <div class="card"><b>#{dashboardBean.managerPendingCount}</b>Waiting for your decision</div>
+                <div class="card"><b>#{dashboardBean.departmentSubmitted.size()}</b>Submitted by your department</div>
             </div>
             <div class="panel">
-                <div class="actions">
-                    <a class="btn" href="#{request.contextPath}/manager/approvals.xhtml">Open approvals</a>
-                </div>
+                <h3>Submitted requests from #{dashboardBean.departmentName}</h3>
+                <h:outputText value="Nothing has been submitted yet." rendered="#{empty dashboardBean.departmentSubmitted}"/>
+                <h:dataTable value="#{dashboardBean.departmentSubmitted}" var="r" styleClass="grid"
+                             rendered="#{not empty dashboardBean.departmentSubmitted}">
+                    <h:column>
+                        <f:facet name="header">Number</f:facet>
+                        <a href="#{request.contextPath}/request-detail.xhtml?id=#{r.id}">#{r.requestNumber}</a>
+                    </h:column>
+                    <h:column><f:facet name="header">Employee</f:facet>#{r.requestedBy.fullName}</h:column>
+                    <h:column><f:facet name="header">Title / pay to</f:facet><strong>#{r.title}</strong><br/><span class="muted">#{r.beneficiaryName}</span></h:column>
+                    <h:column headerClass="num" styleClass="num">
+                        <f:facet name="header">Amount (INR)</f:facet>
+                        <h:outputText value="#{r.amount}"><f:convertNumber pattern="#,##0.00"/></h:outputText>
+                    </h:column>
+                </h:dataTable>
             </div>
         </h:panelGroup>
 
-        <!-- FINANCE -->
-        <h:panelGroup layout="block" rendered="#{dashboardBean.finance}">
-            <div class="cards">
-                <div class="card"><b>#{dashboardBean.financePendingCount}</b>Waiting for finance approval</div>
-                <div class="card"><b>#{dashboardBean.awaitingPaymentCount}</b>Approved, ready to pay</div>
-            </div>
-            <div class="panel">
-                <div class="actions">
-                    <a class="btn" href="#{request.contextPath}/finance/approvals.xhtml">Open finance desk</a>
-                </div>
-            </div>
-        </h:panelGroup>
-
-        <!-- DIRECTOR -->
-        <h:panelGroup layout="block" rendered="#{dashboardBean.director}">
-            <div class="cards">
-                <div class="card"><b>#{dashboardBean.directorPendingCount}</b>Large requests waiting for you</div>
-            </div>
-            <div class="panel">
-                <div class="actions">
-                    <a class="btn" href="#{request.contextPath}/director/approvals.xhtml">Open director desk</a>
-                </div>
-            </div>
-        </h:panelGroup>
-
-        <!-- ADMIN -->
-        <h:panelGroup layout="block" rendered="#{dashboardBean.admin}">
+        <!-- FINANCE AND ADMIN -->
+        <h:panelGroup layout="block" rendered="#{dashboardBean.finance or dashboardBean.admin}">
             <div class="cards">
                 <div class="card"><b>#{dashboardBean.totalRequests}</b>Total requests</div>
-                <div class="card"><b>#{dashboardBean.totalPaid}</b>Paid requests</div>
-            </div>
-            <div class="panel">
-                <div class="actions">
-                    <a class="btn" href="#{request.contextPath}/admin/users.xhtml">Manage users</a>
-                    <a class="btn" href="#{request.contextPath}/admin/departments.xhtml">Departments</a>
-                    <a class="btn" href="#{request.contextPath}/admin/settings.xhtml">Workflow rules</a>
-                    <a class="btn" href="#{request.contextPath}/admin/audit.xhtml">Audit log</a>
-                </div>
+                <div class="card"><b>#{dashboardBean.totalSubmitted}</b>Submitted, waiting for approval</div>
             </div>
         </h:panelGroup>
     </ui:define>

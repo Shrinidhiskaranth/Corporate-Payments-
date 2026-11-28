@@ -2,11 +2,8 @@ package com.nmamit.payments;
 
 import com.nmamit.payments.model.entity.PaymentRequest;
 import com.nmamit.payments.model.entity.User;
-import com.nmamit.payments.model.enums.ApprovalLevel;
-import com.nmamit.payments.model.enums.AuditAction;
 import com.nmamit.payments.model.enums.PaymentCategory;
 import com.nmamit.payments.model.enums.RequestStatus;
-import com.nmamit.payments.repository.AuditLogRepository;
 import com.nmamit.payments.repository.UserRepository;
 import com.nmamit.payments.service.NotAllowedException;
 import com.nmamit.payments.service.PaymentRequestService;
@@ -29,7 +26,6 @@ class PaymentRequestServiceTests {
 
     @Autowired PaymentRequestService service;
     @Autowired UserRepository userRepository;
-    @Autowired AuditLogRepository auditLogRepository;
 
     User employee, manager;
 
@@ -45,12 +41,11 @@ class PaymentRequestServiceTests {
 
     @Test
     void createDraftAssignsNumberAndStatus() {
-        long before = auditLogRepository.countByAction(AuditAction.CREATE_REQUEST);
         PaymentRequest r = draft("45000.00");
         assertThat(r.getId()).isNotNull();
         assertThat(r.getRequestNumber()).matches("PR-\\d{4}-\\d{4}");
         assertThat(r.getStatus()).isEqualTo(RequestStatus.DRAFT);
-        assertThat(auditLogRepository.countByAction(AuditAction.CREATE_REQUEST)).isEqualTo(before + 1);
+        assertThat(service.myRequests(employee)).extracting(PaymentRequest::getId).contains(r.getId());
     }
 
     @Test
@@ -63,15 +58,10 @@ class PaymentRequestServiceTests {
     }
 
     @Test
-    void submitMovesDraftToPendingManagerAndFixesRoute() {
-        PaymentRequest small = draft("5000");
-        service.submit(small.getId(), employee);
-        assertThat(small.getStatus()).isEqualTo(RequestStatus.PENDING_MANAGER);
-        assertThat(small.getFinalLevel()).isEqualTo(ApprovalLevel.MANAGER);
-
-        PaymentRequest large = draft("250000");
-        service.submit(large.getId(), employee);
-        assertThat(large.getFinalLevel()).isEqualTo(ApprovalLevel.DIRECTOR);
+    void submitMovesDraftToPendingManager() {
+        PaymentRequest r = draft("45000.00");
+        service.submit(r.getId(), employee);
+        assertThat(r.getStatus()).isEqualTo(RequestStatus.PENDING_MANAGER);
     }
 
     @Test

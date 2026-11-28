@@ -29,7 +29,7 @@ class CorporatePaymentsApplicationTests {
     @Test
     void seedDataIsLoaded() {
         assertThat(departmentRepository.count()).isEqualTo(3);
-        assertThat(userRepository.count()).isEqualTo(7);
+        assertThat(userRepository.count()).isEqualTo(6);
         User admin = userRepository.findByEmail("admin@corp.com").orElseThrow();
         assertThat(passwordEncoder.matches("password123", admin.getPassword())).isTrue();
     }

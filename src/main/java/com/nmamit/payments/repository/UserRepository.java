@@ -3,7 +3,6 @@ package com.nmamit.payments.repository;
 import com.nmamit.payments.model.entity.User;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
-import java.util.List;
 import java.util.Optional;
 
 public interface UserRepository extends JpaRepository<User, Long> {
@@ -13,9 +12,4 @@ public interface UserRepository extends JpaRepository<User, Long> {
     /** Same as findByEmail but also loads the department, for use in JSF pages. */
     @EntityGraph(attributePaths = "department")
     Optional<User> findWithDepartmentByEmail(String email);
-
-    @EntityGraph(attributePaths = "department")
-    List<User> findAllByOrderByFullNameAsc();
-
-    boolean existsByEmail(String email);
 }

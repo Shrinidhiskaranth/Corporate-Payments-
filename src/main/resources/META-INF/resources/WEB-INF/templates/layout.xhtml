@@ -127,38 +127,18 @@
         .filters .check input { width: auto; }
         .filters .check label { text-transform: none; letter-spacing: 0; font-size: 14px; color: var(--ink); }
         .pager { display: flex; align-items: center; gap: 12px; margin-top: 16px; flex-wrap: wrap; color: var(--ink-2); }
-        .remarks { width: 190px; }
         .muted { color: var(--ink-3); font-size: 13px; }
 
         /* ---------- status and tags ---------- */
         .status { display: inline-block; font-size: 11.5px; font-weight: 700; padding: 3px 10px; border-radius: 999px;
                   white-space: nowrap; letter-spacing: .3px; }
         .st-DRAFT { background: #edf0f4; color: #4a5568; }
-        .st-PENDING_MANAGER, .st-PENDING_FINANCE, .st-PENDING_DIRECTOR { background: var(--amber-bg); color: var(--amber); }
-        .st-APPROVED { background: var(--blue-100); color: var(--blue-700); }
-        .st-PAID { background: var(--green-bg); color: var(--green); }
-        .st-REJECTED { background: var(--red-bg); color: var(--red); }
+        .st-PENDING_MANAGER { background: var(--amber-bg); color: var(--amber); }
         .st-CANCELLED { background: #f3e8f6; color: #6a1b9a; }
         .sub { display: block; font-size: 12px; margin-top: 5px; white-space: nowrap; }
         .tag { display: inline-block; font-size: 10.5px; font-weight: 800; padding: 2px 7px; border-radius: 5px;
                white-space: nowrap; background: var(--red-bg); color: var(--red); letter-spacing: .4px; margin-left: 4px; }
         .tag.info { background: var(--blue-100); color: var(--blue-700); }
-
-        /* ---------- approval route stepper ---------- */
-        .steps { display: flex; flex-wrap: wrap; gap: 0; margin: 16px 0 6px; padding: 0; list-style: none; counter-reset: step; }
-        .steps li { position: relative; padding: 9px 18px 9px 30px; font-size: 13px; font-weight: 600;
-                    background: var(--blue-50); color: var(--ink-3); border: 1px solid var(--line);
-                    margin-right: -1px; min-width: 120px; }
-        .steps li:first-child { border-radius: 8px 0 0 8px; padding-left: 18px; }
-        .steps li:last-child { border-radius: 0 8px 8px 0; }
-        .steps li:not(:first-child)::before { content: "\203A"; position: absolute; left: 11px; top: 7px;
-                                              color: #a0aec0; font-size: 16px; }
-        .steps li small { display: block; color: inherit; opacity: .8; font-size: 11px; font-weight: 500; }
-        .steps li.done { background: var(--green-bg); color: var(--green); border-color: #bfe3cb; }
-        .steps li.current { background: var(--blue-700); color: #fff; border-color: var(--blue-700); }
-        .steps li.current::before { color: rgba(255, 255, 255, .7); }
-        .steps li.rejected { background: var(--red-bg); color: var(--red); border-color: #f2c1bd; }
-        .steps li.skipped { color: #a0aec0; text-decoration: line-through; }
 
         footer { text-align: center; color: var(--ink-3); font-size: 12px; padding: 10px 0 30px; }
 
@@ -177,20 +157,6 @@
             <a href="#{request.contextPath}/dashboard.xhtml">Dashboard</a>
             <h:outputLink value="#{request.contextPath}/employee/new-request.xhtml"
                           rendered="#{request.isUserInRole('EMPLOYEE')}">New request</h:outputLink>
-            <h:outputLink value="#{request.contextPath}/manager/approvals.xhtml"
-                          rendered="#{request.isUserInRole('MANAGER')}">Approvals</h:outputLink>
-            <h:outputLink value="#{request.contextPath}/finance/approvals.xhtml"
-                          rendered="#{request.isUserInRole('FINANCE')}">Finance</h:outputLink>
-            <h:outputLink value="#{request.contextPath}/director/approvals.xhtml"
-                          rendered="#{request.isUserInRole('DIRECTOR')}">Director desk</h:outputLink>
-            <h:outputLink value="#{request.contextPath}/admin/users.xhtml"
-                          rendered="#{request.isUserInRole('ADMIN')}">Users</h:outputLink>
-            <h:outputLink value="#{request.contextPath}/admin/departments.xhtml"
-                          rendered="#{request.isUserInRole('ADMIN')}">Departments</h:outputLink>
-            <h:outputLink value="#{request.contextPath}/admin/settings.xhtml"
-                          rendered="#{request.isUserInRole('ADMIN')}">Workflow rules</h:outputLink>
-            <h:outputLink value="#{request.contextPath}/admin/audit.xhtml"
-                          rendered="#{request.isUserInRole('ADMIN')}">Audit log</h:outputLink>
         </nav>
         <div class="who">
             <span class="avatar">#{request.userPrincipal.name.substring(0, 1)}</span>

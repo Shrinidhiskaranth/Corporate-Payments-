@@ -5,7 +5,6 @@ import com.nmamit.payments.model.entity.User;
 import com.nmamit.payments.model.enums.RequestStatus;
 import com.nmamit.payments.model.enums.Role;
 import com.nmamit.payments.repository.PaymentRequestRepository;
-import com.nmamit.payments.service.ApprovalService;
 import com.nmamit.payments.service.CurrentUserService;
 import com.nmamit.payments.service.PaymentRequestService;
 import com.nmamit.payments.service.WorkflowException;
@@ -21,19 +20,16 @@ public class DashboardBean {
 
     private final CurrentUserService currentUserService;
     private final PaymentRequestService requestService;
-    private final ApprovalService approvalService;
     private final PaymentRequestRepository requestRepository;
 
     private User user;
     private List<PaymentRequest> myRequests;
-    private List<PaymentRequest> managerQueue;
-    private List<PaymentRequest> financeQueue;
+    private List<PaymentRequest> departmentSubmitted;
 
     public DashboardBean(CurrentUserService currentUserService, PaymentRequestService requestService,
-                         ApprovalService approvalService, PaymentRequestRepository requestRepository) {
+                         PaymentRequestRepository requestRepository) {
         this.currentUserService = currentUserService;
         this.requestService = requestService;
-        this.approvalService = approvalService;
         this.requestRepository = requestRepository;
     }
 
@@ -51,7 +47,6 @@ public class DashboardBean {
     public boolean isEmployee() { return getUser().getRole() == Role.EMPLOYEE; }
     public boolean isManager()  { return getUser().getRole() == Role.MANAGER; }
     public boolean isFinance()  { return getUser().getRole() == Role.FINANCE; }
-    public boolean isDirector() { return getUser().getRole() == Role.DIRECTOR; }
     public boolean isAdmin()    { return getUser().getRole() == Role.ADMIN; }
 
     public List<PaymentRequest> getMyRequests() {
@@ -66,42 +61,23 @@ public class DashboardBean {
         return getMyRequests().stream().filter(r -> r.getStatus() == s).count();
     }
 
-    public int getManagerPendingCount() {
-        return isManager() ? managerQueue().size() : 0;
-    }
-
-    public int getFinancePendingCount() {
-        return isFinance() ? financeQueue().size() : 0;
-    }
-
-    public int getDirectorPendingCount() {
-        return isDirector() ? approvalService.pendingForDirector(getUser()).size() : 0;
-    }
-
-    private List<PaymentRequest> managerQueue() {
-        if (managerQueue == null) {
-            managerQueue = approvalService.pendingForManager(getUser());
+    /** For managers: submitted requests from their own department, oldest first. */
+    public List<PaymentRequest> getDepartmentSubmitted() {
+        if (departmentSubmitted == null) {
+            departmentSubmitted = isManager() && getUser().getDepartment() != null
+                    ? requestRepository.findByStatusAndDepartmentWithDetails(RequestStatus.PENDING_MANAGER,
+                                                                             getUser().getDepartment().getId())
+                    : List.of();
         }
-        return managerQueue;
-    }
-
-    private List<PaymentRequest> financeQueue() {
-        if (financeQueue == null) {
-            financeQueue = approvalService.pendingForFinance(getUser());
-        }
-        return financeQueue;
-    }
-
-    public int getAwaitingPaymentCount() {
-        return isFinance() ? approvalService.awaitingPayment(getUser()).size() : 0;
+        return departmentSubmitted;
     }
 
     public long getTotalRequests() {
         return requestRepository.count();
     }
 
-    public long getTotalPaid() {
-        return requestRepository.countByStatus(RequestStatus.PAID);
+    public long getTotalSubmitted() {
+        return requestRepository.countByStatus(RequestStatus.PENDING_MANAGER);
     }
 
     public boolean canEdit(PaymentRequest r)   { return r.getStatus() == RequestStatus.DRAFT; }
@@ -113,8 +89,7 @@ public class DashboardBean {
     public String submit(Long id) {
         try {
             PaymentRequest r = requestService.submit(id, getUser());
-            FacesUtil.infoAfterRedirect(r.getRequestNumber() + " submitted for manager approval. Approval route: "
-                    + new FormatBean().route(r) + ".");
+            FacesUtil.infoAfterRedirect(r.getRequestNumber() + " submitted for manager approval.");
         } catch (WorkflowException e) {
             FacesUtil.errorAfterRedirect(e.getMessage());
         }

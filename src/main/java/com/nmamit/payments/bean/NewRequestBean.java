@@ -2,12 +2,10 @@ package com.nmamit.payments.bean;
 
 import com.nmamit.payments.model.entity.PaymentRequest;
 import com.nmamit.payments.model.entity.User;
-import com.nmamit.payments.model.entity.WorkflowSettings;
 import com.nmamit.payments.model.enums.PaymentCategory;
 import com.nmamit.payments.service.CurrentUserService;
 import com.nmamit.payments.service.PaymentRequestService;
 import com.nmamit.payments.service.WorkflowException;
-import com.nmamit.payments.service.WorkflowSettingsService;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.stereotype.Component;
@@ -23,7 +21,6 @@ public class NewRequestBean {
 
     private final CurrentUserService currentUserService;
     private final PaymentRequestService requestService;
-    private final WorkflowSettingsService settingsService;
 
     @Getter @Setter private Long id;
     @Getter @Setter private String title;
@@ -36,14 +33,11 @@ public class NewRequestBean {
     @Getter @Setter private boolean submitNow = true;
     @Getter private String requestNumber;
 
-    private WorkflowSettings rules;
     private User user;
 
-    public NewRequestBean(CurrentUserService currentUserService, PaymentRequestService requestService,
-                          WorkflowSettingsService settingsService) {
+    public NewRequestBean(CurrentUserService currentUserService, PaymentRequestService requestService) {
         this.currentUserService = currentUserService;
         this.requestService = requestService;
-        this.settingsService = settingsService;
     }
 
     private User user() {
@@ -55,14 +49,6 @@ public class NewRequestBean {
 
     public PaymentCategory[] getCategories() {
         return PaymentCategory.values();
-    }
-
-    /** Current approval thresholds, shown as a hint on the form. */
-    public WorkflowSettings getRules() {
-        if (rules == null) {
-            rules = settingsService.get();
-        }
-        return rules;
     }
 
     public boolean isEditing() {
@@ -105,8 +91,7 @@ public class NewRequestBean {
             String msg = r.getRequestNumber() + (id == null ? " saved as draft." : " updated.");
             if (submitNow) {
                 requestService.submit(r.getId(), user());
-                msg = r.getRequestNumber() + " submitted for approval. Approval route: "
-                        + new FormatBean().route(r) + ".";
+                msg = r.getRequestNumber() + " submitted for manager approval.";
             }
             FacesUtil.infoAfterRedirect(msg);
             return "/dashboard.xhtml?faces-redirect=true";

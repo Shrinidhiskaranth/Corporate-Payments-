@@ -56,7 +56,7 @@ class SecurityTests {
     @Test
     @WithMockUser(roles = "MANAGER")
     void managerCannotOpenFinancePages() throws Exception {
-        mockMvc.perform(get("/finance/pay.xhtml"))
+        mockMvc.perform(get("/finance/approvals.xhtml"))
                 .andExpect(status().isForbidden());
     }
 
@@ -68,16 +68,9 @@ class SecurityTests {
     }
 
     @Test
-    @WithMockUser(roles = "MANAGER")
-    void managerCannotOpenDirectorPages() throws Exception {
-        mockMvc.perform(get("/director/approvals.xhtml"))
-                .andExpect(status().isForbidden());
-    }
-
-    @Test
-    @WithMockUser(roles = "DIRECTOR")
-    void directorCannotOpenAdminPages() throws Exception {
-        mockMvc.perform(get("/admin/settings.xhtml"))
+    @WithMockUser(roles = "EMPLOYEE")
+    void employeeCannotOpenFinancePages() throws Exception {
+        mockMvc.perform(get("/finance/approvals.xhtml"))
                 .andExpect(status().isForbidden());
     }
 }

@@ -74,14 +74,6 @@
                     </h:inputText>
                 </div>
 
-                <p class="muted">
-                    Approval route by amount: up to INR
-                    <h:outputText value="#{newRequestBean.rules.managerOnlyLimit}"><f:convertNumber pattern="#,##0"/></h:outputText>
-                    &#8594; manager; up to INR
-                    <h:outputText value="#{newRequestBean.rules.directorThreshold}"><f:convertNumber pattern="#,##0"/></h:outputText>
-                    &#8594; manager and finance; above &#8594; manager, finance and director.
-                </p>
-
                 <div class="form-row">
                     <h:selectBooleanCheckbox id="submitNow" value="#{newRequestBean.submitNow}"/>
                     <h:outputLabel for="submitNow" value=" Submit for approval now (untick to keep as draft)"

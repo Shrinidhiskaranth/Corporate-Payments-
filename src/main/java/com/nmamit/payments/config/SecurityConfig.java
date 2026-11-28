@@ -33,9 +33,8 @@ public class SecurityConfig {
                 .requestMatchers("/employee/**").hasRole("EMPLOYEE")
                 .requestMatchers("/manager/**").hasRole("MANAGER")
                 .requestMatchers("/finance/**").hasRole("FINANCE")
-                .requestMatchers("/director/**").hasRole("DIRECTOR")
                 .requestMatchers("/admin/**").hasRole("ADMIN")
-                // everything else (dashboard, request detail, receipts) needs a logged-in user;
+                // everything else (dashboard, request detail) needs a logged-in user;
                 // the services limit what each role can see
                 .anyRequest().authenticated())
             .formLogin(form -> form

@@ -23,20 +23,6 @@
                     <span class="status st-#{req.status}">#{req.status}</span>
                 </p>
 
-                <ul class="steps">
-                    <ui:repeat value="#{requestDetailBean.steps}" var="s">
-                        <li class="#{s.state}">#{s.name}
-                            <h:panelGroup rendered="#{not empty s.note}"><small>#{s.note}</small></h:panelGroup>
-                        </li>
-                    </ui:repeat>
-                </ul>
-                <p class="muted">
-                    <h:outputText value="Approval route: #{fmt.route(req)} (fixed from the amount when the request was submitted)."
-                                  rendered="#{req.status ne 'DRAFT'}"/>
-                    <h:outputText value="The approval route is decided from the amount when the request is submitted."
-                                  rendered="#{req.status eq 'DRAFT'}"/>
-                </p>
-
                 <table class="details">
                     <tr><th>Amount</th><td><strong>INR <h:outputText value="#{req.amount}"><f:convertNumber pattern="#,##0.00"/></h:outputText></strong></td></tr>
                     <tr><th>Category</th><td>#{req.category}</td></tr>
@@ -49,53 +35,6 @@
                     <tr><th>Last updated</th>
                         <td><h:outputText value="#{req.updatedAt}"><f:convertDateTime type="localDateTime" pattern="dd-MM-yyyy HH:mm"/></h:outputText></td></tr>
                 </table>
-            </div>
-
-            <div class="panel">
-                <h3>Approval history</h3>
-                <h:outputText value="No decisions yet." rendered="#{empty requestDetailBean.approvals}"/>
-                <h:dataTable value="#{requestDetailBean.approvals}" var="a" styleClass="grid"
-                             rendered="#{not empty requestDetailBean.approvals}">
-                    <h:column><f:facet name="header">Level</f:facet>#{a.level}</h:column>
-                    <h:column><f:facet name="header">Decision</f:facet>#{a.decision}</h:column>
-                    <h:column><f:facet name="header">By</f:facet>#{a.approver.fullName}</h:column>
-                    <h:column><f:facet name="header">Remarks</f:facet>#{empty a.remarks ? '-' : a.remarks}</h:column>
-                    <h:column>
-                        <f:facet name="header">When</f:facet>
-                        <h:outputText value="#{a.decidedAt}"><f:convertDateTime type="localDateTime" pattern="dd-MM-yyyy HH:mm"/></h:outputText>
-                    </h:column>
-                </h:dataTable>
-            </div>
-
-            <h:panelGroup layout="block" styleClass="panel" rendered="#{not empty requestDetailBean.transaction}">
-                <div class="panel-head">
-                    <h3>Payment advice</h3>
-                    <a class="btn small" href="#{request.contextPath}/receipts/#{req.id}.pdf" target="_blank">Download receipt (PDF)</a>
-                </div>
-                <table class="details">
-                    <tr><th>Transaction reference</th><td><strong>#{requestDetailBean.transaction.referenceNumber}</strong></td></tr>
-                    <tr><th>Paid to</th><td>#{req.beneficiaryName} &#8211; account
-                        #{requestDetailBean.transaction.paidToAccount}</td></tr>
-                    <tr><th>Amount</th>
-                        <td>INR <h:outputText value="#{requestDetailBean.transaction.amount}"><f:convertNumber pattern="#,##0.00"/></h:outputText></td></tr>
-                    <tr><th>Paid by</th><td>#{requestDetailBean.transaction.processedBy.fullName}</td></tr>
-                    <tr><th>OTP verified</th><td>#{requestDetailBean.transaction.otpVerified ? 'Yes' : 'No'}</td></tr>
-                    <tr><th>Paid at</th>
-                        <td><h:outputText value="#{requestDetailBean.transaction.paidAt}"><f:convertDateTime type="localDateTime" pattern="dd-MM-yyyy HH:mm:ss"/></h:outputText></td></tr>
-                </table>
-            </h:panelGroup>
-
-            <div class="panel">
-                <h3>Audit trail</h3>
-                <h:dataTable value="#{requestDetailBean.history}" var="l" styleClass="grid">
-                    <h:column>
-                        <f:facet name="header">When</f:facet>
-                        <h:outputText value="#{l.createdAt}"><f:convertDateTime type="localDateTime" pattern="dd-MM-yyyy HH:mm:ss"/></h:outputText>
-                    </h:column>
-                    <h:column><f:facet name="header">User</f:facet>#{empty l.user ? 'System' : l.user.fullName}</h:column>
-                    <h:column><f:facet name="header">Action</f:facet>#{l.action}</h:column>
-                    <h:column><f:facet name="header">Details</f:facet>#{l.details}</h:column>
-                </h:dataTable>
             </div>
         </h:panelGroup>
 

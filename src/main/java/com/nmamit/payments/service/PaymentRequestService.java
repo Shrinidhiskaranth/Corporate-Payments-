@@ -1,10 +1,7 @@
 package com.nmamit.payments.service;
 
-import com.nmamit.payments.model.entity.AuditLog;
 import com.nmamit.payments.model.entity.PaymentRequest;
 import com.nmamit.payments.model.entity.User;
-import com.nmamit.payments.model.enums.ApprovalLevel;
-import com.nmamit.payments.model.enums.AuditAction;
 import com.nmamit.payments.model.enums.PaymentCategory;
 import com.nmamit.payments.model.enums.RequestStatus;
 import com.nmamit.payments.model.enums.Role;
@@ -18,11 +15,10 @@ import java.time.Year;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Objects;
-import java.util.stream.Collectors;
 
 /**
  * Payment requests raised by employees: create as a draft, edit while it is a draft, submit for approval
- * or cancel. Submitting fixes the approval route from the amount rules.
+ * or cancel.
  */
 @Service
 public class PaymentRequestService {
@@ -30,14 +26,9 @@ public class PaymentRequestService {
     static final BigDecimal MAX_AMOUNT = new BigDecimal("10000000.00"); // 1 crore
 
     private final PaymentRequestRepository requestRepository;
-    private final AuditService auditService;
-    private final WorkflowSettingsService settingsService;
 
-    public PaymentRequestService(PaymentRequestRepository requestRepository, AuditService auditService,
-                                 WorkflowSettingsService settingsService) {
+    public PaymentRequestService(PaymentRequestRepository requestRepository) {
         this.requestRepository = requestRepository;
-        this.auditService = auditService;
-        this.settingsService = settingsService;
     }
 
     /** What is typed into the request form. */
@@ -56,11 +47,7 @@ public class PaymentRequestService {
         request.setStatus(RequestStatus.DRAFT);
         request.setRequestedBy(employee);
         apply(request, f);
-        requestRepository.save(request);
-        auditService.log(employee, AuditAction.CREATE_REQUEST, AuditLog.TYPE_REQUEST, request.getId(),
-                "Created " + request.getRequestNumber() + " for INR " + request.getAmount()
-                        + " to " + request.getBeneficiaryName());
-        return request;
+        return requestRepository.save(request);
     }
 
     /** Changes a request that is still a DRAFT. */
@@ -71,25 +58,17 @@ public class PaymentRequestService {
             throw new WorkflowException("Only draft requests can be edited");
         }
         apply(request, f);
-        auditService.log(employee, AuditAction.UPDATE_REQUEST, AuditLog.TYPE_REQUEST, request.getId(),
-                "Edited " + request.getRequestNumber() + " (INR " + request.getAmount() + ")");
         return request;
     }
 
-    /** DRAFT -> PENDING_MANAGER. The approval route is fixed from the amount rules. */
+    /** DRAFT -> PENDING_MANAGER. */
     @Transactional
     public PaymentRequest submit(Long requestId, User employee) {
         PaymentRequest request = findOwned(requestId, employee);
         if (request.getStatus() != RequestStatus.DRAFT) {
             throw new WorkflowException("Only draft requests can be submitted");
         }
-        ApprovalLevel finalLevel = settingsService.requiredLevel(request.getAmount());
-        request.setFinalLevel(finalLevel);
         request.setStatus(RequestStatus.PENDING_MANAGER);
-        String route = WorkflowSettingsService.route(finalLevel).stream()
-                .map(Enum::name).collect(Collectors.joining(" -> "));
-        auditService.log(employee, AuditAction.SUBMIT_REQUEST, AuditLog.TYPE_REQUEST, request.getId(),
-                "Submitted " + request.getRequestNumber() + " for approval (route: " + route + ")");
         return request;
     }
 
@@ -101,8 +80,6 @@ public class PaymentRequestService {
             throw new WorkflowException("This request can no longer be cancelled");
         }
         request.setStatus(RequestStatus.CANCELLED);
-        auditService.log(employee, AuditAction.CANCEL_REQUEST, AuditLog.TYPE_REQUEST, request.getId(),
-                "Cancelled " + request.getRequestNumber());
         return request;
     }
 
@@ -123,7 +100,7 @@ public class PaymentRequestService {
 
     /**
      * Loads a request for the detail page. Employees see their own; managers their department's;
-     * finance, director and admin everything.
+     * finance and admin everything.
      */
     @Transactional(readOnly = true)
     public PaymentRequest getForViewing(Long requestId, User viewer) {
@@ -134,7 +111,7 @@ public class PaymentRequestService {
                 .orElseThrow(() -> new WorkflowException("Request " + requestId + " not found"));
         User owner = request.getRequestedBy();
         boolean allowed = switch (viewer.getRole()) {
-            case ADMIN, FINANCE, DIRECTOR -> true;
+            case ADMIN, FINANCE -> true;
             case MANAGER -> owner.getDepartment() != null && viewer.getDepartment() != null
                     && Objects.equals(owner.getDepartment().getId(), viewer.getDepartment().getId());
             case EMPLOYEE -> Objects.equals(owner.getId(), viewer.getId());
